@@ -24,6 +24,9 @@
   * Credits:
   * Feed parsing: https://github.com/themattharris/tmhOAuth
   * Hashtag/username parsing: https://github.com/mikenz/twitter-text-php
+  *
+  * Edits:
+  * Modified by SKuipers > added an id to options, so the class can be used in multiple locations & still cache
   */
  class TweetPHP {
     private $tmhOAuth;
@@ -41,6 +44,7 @@
 
       $this->options = array_merge(
       array(
+          'id'                    => 'default',
           'consumer_key'          => '',
           'consumer_secret'       => '',
           'access_token'          => '',
@@ -78,7 +82,10 @@
         setlocale(LC_ALL, $this->options['date_lang']);
       }
 
-      $cache_file_timestamp = ((file_exists($this->options['cache_file']))) ? filemtime($this->options['cache_file']) : 0;
+      $cache_file = str_replace('.txt', '-'.$this->options['id'].'.txt', $this->options['cache_file']);
+      $cache_raw = str_replace('.txt', '-'.$this->options['id'].'.txt', $this->options['cache_file_raw']);
+
+      $cache_file_timestamp = ((file_exists($cache_file))) ? filemtime($cache_file) : 0;
       $this->add_debug_item('Cache expiration timestamp: ' . (time() - $this->options['cachetime']));
       $this->add_debug_item('Cache file timestamp: ' . $cache_file_timestamp);
 
@@ -86,8 +93,8 @@
       if (time() - $this->options['cachetime'] < $cache_file_timestamp) {
         $this->tweet_found = true;
         $this->add_debug_item('Cache file is newer than cachetime.');
-        $this->tweet_list = file_get_contents($this->options['cache_file']);  
-        $this->tweet_array = unserialize(file_get_contents($this->options['cache_file_raw']));
+        $this->tweet_list = file_get_contents($cache_file);  
+        $this->tweet_array = unserialize(file_get_contents($cache_raw));
       } else {
         $this->add_debug_item("Cache file doesn't exist or is older than cachetime.");
         $this->fetch_tweets();
@@ -149,13 +156,16 @@
         // Close the twitter wrapping element.
         $html .= $this->options['twitter_wrap_close'];
 
+        $cache_file = str_replace('.txt', '-'.$this->options['id'].'.txt', $this->options['cache_file']);
+        $cache_raw = str_replace('.txt', '-'.$this->options['id'].'.txt', $this->options['cache_file_raw']);
+
         // Save the formatted tweet list to a file. 
-        $file = fopen($this->options['cache_file'], 'w');
+        $file = fopen($cache_file, 'w+');
         fwrite($file, $html); 
         fclose($file);
 
         // Save the raw data array to a file. 
-        $file = fopen($this->options['cache_file_raw'], 'w');
+        $file = fopen($cache_raw, 'w+');
         fwrite($file, serialize($data)); 
         fclose($file);
 
