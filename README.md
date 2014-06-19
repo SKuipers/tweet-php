@@ -11,6 +11,7 @@ A PHP class for fetching tweets from a Twitter user's timeline, and rendering th
 - A configuration parameter allows you to specify how many tweets are displayed
 - Dates can optionally be displayed in “Twitter style”, e.g. “12 minutes ago”
 - You can customize the HTML that wraps your tweets, tweet status and meta information
+- New: You can supply an id to use the class multiple times and cache each result-set
 
 ## Usage
 
@@ -42,6 +43,7 @@ Options can be overridden by passing an array of key/value pairs to the class co
 
 Here is a full list of options, and their default values:
 
+    'id'                    => 'default',
     'consumer_key'          => '',
     'consumer_secret'       => '',
     'access_token'          => '',
